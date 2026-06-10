@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&family=Manrope:wght@500;600;700;800&display=swap&subset=cyrillic');
+@import 'tailwindcss';
+
+:root {
+  color-scheme: light;
+  --bg: #eef2f7;
+  --panel: #ffffff;
+  --panel-2: #f8fafc;
+  --border: #d7dee8;
+  --text: #101828;
+  --muted: #667085;
+  --accent: #0784c3;
+  --accent-strong: #006aa1;
+  --danger: #d92d20;
+  --success: #039855;
+  --shadow: 0 16px 50px rgba(15, 23, 42, 0.12);
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+}
+
+.dark {
+  color-scheme: dark;
+  --bg: #0b111a;
+  --panel: #111827;
+  --panel-2: #0f172a;
+  --border: #263244;
+  --text: #f8fafc;
+  --muted: #9aa4b2;
+  --accent: #38bdf8;
+  --accent-strong: #0ea5e9;
+  --danger: #fb7185;
+  --success: #34d399;
+  --shadow: 0 18px 60px rgba(0, 0, 0, 0.35);
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  overflow: hidden;
+}
+
+button,
+input,
+select {
+  font: inherit;
+}
+
+canvas,
+img {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+* {
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: Manrope, Inter, ui-sans-serif, system-ui, sans-serif;
+}
+
+.font-mono,
+code,
+kbd {
+  font-family: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+}
+
+.editor-panel {
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+.editor-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  background: var(--panel);
+  color: var(--text);
+  min-height: 34px;
+  padding: 0.45rem 0.7rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.editor-button:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.editor-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.editor-button-primary {
+  border-color: var(--accent-strong);
+  background: var(--accent-strong);
+  color: white;
+}
+
+.dark .editor-button-primary {
+  color: #06111f;
+}
+
+.editor-input {
+  border: 1px solid var(--border);
+  background: var(--panel-2);
+  color: var(--text);
+}
+
+.checkerboard {
+  background-color: #ffffff;
+  background-image:
+    linear-gradient(45deg, #d9dde3 25%, transparent 25%),
+    linear-gradient(-45deg, #d9dde3 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #d9dde3 75%),
+    linear-gradient(-45deg, transparent 75%, #d9dde3 75%);
+  background-position:
+    0 0,
+    0 8px,
+    8px -8px,
+    -8px 0;
+  background-size: 16px 16px;
+}
+
+.dark .checkerboard {
+  background-color: #0f172a;
+  background-image:
+    linear-gradient(45deg, #253247 25%, transparent 25%),
+    linear-gradient(-45deg, #253247 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #253247 75%),
+    linear-gradient(-45deg, transparent 75%, #253247 75%);
+}
