@@ -78,7 +78,11 @@ function isChartCellPixel(data: Uint8ClampedArray, index: number): boolean {
   return hsv.s >= 0.22 && hsv.v >= 0.28 && Math.max(r, g, b) - Math.min(r, g, b) >= 24;
 }
 
-function largestDenseRun(scores: number[], minScore: number, maxGap: number): { start: number; end: number } | null {
+function largestDenseRun(
+  scores: number[],
+  minScore: number,
+  maxGap: number
+): { start: number; end: number } | null {
   let best: { start: number; end: number } | null = null;
   let bestArea = -1;
   let start = -1;
@@ -178,9 +182,8 @@ export function cropImageData(imageData: ImageData, bounds: Bounds): ImageData {
 }
 
 export function autoTrim(imageData: ImageData): { imageData: ImageData; bounds: Bounds } {
-  const bounds =
+  const bounds = findBlueGridBounds(imageData) ??
     findChartCellBounds(imageData) ??
-    findBlueGridBounds(imageData) ??
     findContentBounds(imageData) ?? {
       minX: 0,
       minY: 0,

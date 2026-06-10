@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { PointerEvent } from 'react';
+import { useTranslation } from 'react-i18next';
 import { dominantCellColor } from '../services/colorDetectionService';
 import { composeImageData, imageDataToCanvas } from '../utils/canvasUtils';
 import {
   cellFromPoint,
   cellId,
-  cellRect,
+  getSafeCellRect,
   gridColumnLinePosition,
   gridRowLinePosition,
   normalizedRange
@@ -20,24 +21,20 @@ const SELECTED_CELL_FILL = {
   r: 255,
   g: 255,
   b: 255,
-  a: 255
+  a: 105
 };
 
 // Колір активного виділення
 const SELECTED_CELL_STROKE = 'rgba(158, 0, 30, 1)';
 
-// Відступи заливки від меж клітинки
-// top/left = 0, щоб заливка не була занадто втиснута
-// right/bottom лишаємо трохи меншими, щоб не зʼїдати бірюзову сітку
+// Відступи заливки від меж клітинки.
+// Сам rect вже квантований по піксельних межах сітки, тому штучні зазори не потрібні.
 const CELL_FILL_INSET_TOP = 0;
 const CELL_FILL_INSET_LEFT = 0;
-const CELL_FILL_INSET_RIGHT = 1.3;
-const CELL_FILL_INSET_BOTTOM = 1;
+const CELL_FILL_INSET_RIGHT = 0;
+const CELL_FILL_INSET_BOTTOM = 0;
 
-function getCanvasPoint(
-  canvas: HTMLCanvasElement,
-  event: PointerEvent<HTMLCanvasElement>
-) {
+function getCanvasPoint(canvas: HTMLCanvasElement, event: PointerEvent<HTMLCanvasElement>) {
   const rect = canvas.getBoundingClientRect();
 
   return {
@@ -56,15 +53,9 @@ function paintRectToImageData(
   const startX = Math.max(0, Math.floor(x + CELL_FILL_INSET_LEFT));
   const startY = Math.max(0, Math.floor(y + CELL_FILL_INSET_TOP));
 
-  const endX = Math.min(
-    imageData.width,
-    Math.ceil(x + width - CELL_FILL_INSET_RIGHT)
-  );
+  const endX = Math.min(imageData.width, Math.ceil(x + width - CELL_FILL_INSET_RIGHT));
 
-  const endY = Math.min(
-    imageData.height,
-    Math.ceil(y + height - CELL_FILL_INSET_BOTTOM)
-  );
+  const endY = Math.min(imageData.height, Math.ceil(y + height - CELL_FILL_INSET_BOTTOM));
 
   if (endX <= startX || endY <= startY) {
     return;
@@ -82,6 +73,10 @@ function paintRectToImageData(
   }
 }
 
+function clampPixelCoordinate(value: number, maxExclusive: number): number {
+  return Math.min(Math.max(0, value), Math.max(0, maxExclusive - 1));
+}
+
 function createSelectionMask(
   width: number,
   height: number,
@@ -91,24 +86,19 @@ function createSelectionMask(
   const mask = new ImageData(width, height);
 
   selectedCells.forEach((cell) => {
-    const rect = cellRect(grid, cell.row, cell.column);
+    const rect = getSafeCellRect(grid, cell.row, cell.column, width, height);
 
-    paintRectToImageData(
-      mask,
-      rect.x,
-      rect.y,
-      rect.width,
-      rect.height
-    );
+    if (!rect) {
+      return;
+    }
+
+    paintRectToImageData(mask, rect.x, rect.y, rect.width, rect.height);
   });
 
   return mask;
 }
 
-function drawGridOverlay(
-  context: CanvasRenderingContext2D,
-  grid: GridDefinition
-) {
+function drawGridOverlay(context: CanvasRenderingContext2D, grid: GridDefinition) {
   context.strokeStyle = 'rgba(14, 165, 233, 0.95)';
   context.lineWidth = 1;
 
@@ -140,9 +130,15 @@ function drawCellStroke(
   context: CanvasRenderingContext2D,
   grid: GridDefinition,
   row: number,
-  column: number
+  column: number,
+  imageWidth: number,
+  imageHeight: number
 ) {
-  const rect = cellRect(grid, row, column);
+  const rect = getSafeCellRect(grid, row, column, imageWidth, imageHeight);
+
+  if (!rect) {
+    return;
+  }
 
   context.strokeRect(
     rect.x + 0.5,
@@ -152,7 +148,39 @@ function drawCellStroke(
   );
 }
 
+function logCellRectDebug(
+  grid: GridDefinition,
+  row: number,
+  column: number,
+  imageWidth: number,
+  imageHeight: number
+) {
+  if (!import.meta.env.DEV) {
+    return;
+  }
+
+  const rect = getSafeCellRect(grid, row, column, imageWidth, imageHeight);
+
+  console.log('[CELL_RECT_DEBUG]', {
+    row,
+    column,
+    imageWidth,
+    imageHeight,
+    gridRows: grid.rows,
+    gridColumns: grid.columns,
+    bounds: grid.bounds,
+    rect,
+    insideCanvas:
+      rect !== null &&
+      rect.x >= 0 &&
+      rect.y >= 0 &&
+      rect.x + rect.width <= imageWidth &&
+      rect.y + rect.height <= imageHeight
+  });
+}
+
 export function CanvasEditor() {
+  const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -249,19 +277,12 @@ export function CanvasEditor() {
 
         for (let row = rowMin; row <= rowMax; row += 1) {
           for (let column = colMin; column <= colMax; column += 1) {
-            drawCellStroke(context, grid, row, column);
+            drawCellStroke(context, grid, row, column, renderedData.width, renderedData.height);
           }
         }
       }
     }
-  }, [
-    dragEnd,
-    dragStart,
-    grid,
-    renderedData,
-    showGridOverlay,
-    zoom
-  ]);
+  }, [dragEnd, dragStart, grid, renderedData, showGridOverlay, zoom]);
 
   const fitToScreen = useCallback(() => {
     if (!renderedData || !containerRef.current) {
@@ -269,10 +290,7 @@ export function CanvasEditor() {
     }
 
     const rect = containerRef.current.getBoundingClientRect();
-    const nextZoom = Math.min(
-      rect.width / renderedData.width,
-      rect.height / renderedData.height
-    );
+    const nextZoom = Math.min(rect.width / renderedData.width, rect.height / renderedData.height);
 
     setZoom(Math.max(0.05, Math.min(32, nextZoom)));
 
@@ -325,23 +343,31 @@ export function CanvasEditor() {
     return (
       <section className="editor-panel flex min-h-96 items-center justify-center">
         <p className="text-sm" style={{ color: 'var(--muted)' }}>
-          Upload a PNG to begin.
+          {t('canvas.empty')}
         </p>
       </section>
     );
   }
 
   function selectionFromCell(row: number, column: number): CellSelection {
-    const colorCell = colors.find(
-      (cell) => cell.row === row && cell.column === column
-    );
+    const colorCell = colors.find((cell) => cell.row === row && cell.column === column);
 
     let color = colorCell?.hex;
 
     if (!color && renderedData && grid) {
-      const rect = cellRect(grid, row, column);
-      const x = Math.floor(rect.x + rect.width / 2);
-      const y = Math.floor(rect.y + rect.height / 2);
+      const rect = getSafeCellRect(grid, row, column, renderedData.width, renderedData.height);
+
+      if (!rect) {
+        return {
+          row,
+          column,
+          id: cellId(row, column),
+          color: '#00000000'
+        };
+      }
+
+      const x = clampPixelCoordinate(Math.floor(rect.x + rect.width / 2), renderedData.width);
+      const y = clampPixelCoordinate(Math.floor(rect.y + rect.height / 2), renderedData.height);
       const index = (y * renderedData.width + x) * 4;
 
       color = rgbaToHex(
@@ -361,12 +387,7 @@ export function CanvasEditor() {
   }
 
   function sameRgba(a: readonly number[], b: readonly number[]): boolean {
-    return (
-      a[0] === b[0] &&
-      a[1] === b[1] &&
-      a[2] === b[2] &&
-      (a[3] ?? 255) === (b[3] ?? 255)
-    );
+    return a[0] === b[0] && a[1] === b[1] && a[2] === b[2] && (a[3] ?? 255) === (b[3] ?? 255);
   }
 
   function pipetteSelect(row: number, column: number, additive: boolean) {
@@ -380,12 +401,7 @@ export function CanvasEditor() {
 
     for (let nextRow = 0; nextRow < grid.rows; nextRow += 1) {
       for (let nextColumn = 0; nextColumn < grid.columns; nextColumn += 1) {
-        const candidate = dominantCellColor(
-          renderedData,
-          grid,
-          nextRow,
-          nextColumn
-        );
+        const candidate = dominantCellColor(renderedData, grid, nextRow, nextColumn);
 
         if (sameRgba(target, candidate)) {
           cells.push({
@@ -422,10 +438,10 @@ export function CanvasEditor() {
   return (
     <section className="editor-panel p-4">
       <div className="mb-3 flex flex-wrap items-center justify-between gap-3">
-        <h2 className="font-semibold">Canvas Editor</h2>
+        <h2 className="font-semibold">{t('layout.canvas')}</h2>
 
         <div className="text-sm" style={{ color: 'var(--muted)' }}>
-          {renderedData.width} x {renderedData.height}px · pixel perfect
+          {renderedData.width} x {renderedData.height}px · {t('canvas.pixelPerfect')}
         </div>
       </div>
 
@@ -433,8 +449,10 @@ export function CanvasEditor() {
         ref={containerRef}
         className="checkerboard h-[calc(100vh-9rem)] overflow-auto border"
         style={{ borderColor: 'var(--border)' }}
+        title={t('tooltips.canvas')}
+        data-tour="canvas-editor"
         onWheel={(event) => {
-          if (!event.ctrlKey || !containerRef.current) {
+          if (!containerRef.current) {
             return;
           }
 
@@ -446,10 +464,8 @@ export function CanvasEditor() {
           const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12;
           const nextZoom = Math.min(32, Math.max(0.05, zoom * factor));
 
-          const contentX =
-            (container.scrollLeft + event.clientX - rect.left) / beforeZoom;
-          const contentY =
-            (container.scrollTop + event.clientY - rect.top) / beforeZoom;
+          const contentX = (container.scrollLeft + event.clientX - rect.left) / beforeZoom;
+          const contentY = (container.scrollTop + event.clientY - rect.top) / beforeZoom;
 
           setZoom(nextZoom);
 
@@ -460,10 +476,8 @@ export function CanvasEditor() {
         }}
         onPointerMove={(event) => {
           if (panning && containerRef.current) {
-            containerRef.current.scrollLeft =
-              panning.left - (event.clientX - panning.x);
-            containerRef.current.scrollTop =
-              panning.top - (event.clientY - panning.y);
+            containerRef.current.scrollLeft = panning.left - (event.clientX - panning.x);
+            containerRef.current.scrollTop = panning.top - (event.clientY - panning.y);
           }
         }}
         onPointerUp={() => setPanning(null)}
@@ -474,15 +488,23 @@ export function CanvasEditor() {
             width: renderedData.width * zoom,
             height: renderedData.height * zoom,
             cursor:
-              spacePressed || panning
-                ? 'grab'
+              panning
+                ? 'grabbing'
+                : spacePressed
+                  ? 'grab'
                 : activeTool === 'eyedropper'
                   ? 'crosshair'
                   : 'default'
           }}
+          onAuxClick={(event) => {
+            if (event.button === 1) {
+              event.preventDefault();
+            }
+          }}
           onPointerDown={(event) => {
             if ((event.button === 1 || spacePressed) && containerRef.current) {
               event.preventDefault();
+              canvasRef.current?.setPointerCapture(event.pointerId);
 
               setPanning({
                 x: event.clientX,
@@ -504,6 +526,8 @@ export function CanvasEditor() {
             if (!cell) {
               return;
             }
+
+            logCellRectDebug(grid, cell.row, cell.column, renderedData.width, renderedData.height);
 
             if (activeTool === 'eyedropper') {
               pipetteSelect(cell.row, cell.column, event.shiftKey);
@@ -527,12 +551,11 @@ export function CanvasEditor() {
               });
             }
 
-            if (
-              activeTool === 'eyedropper' ||
-              !grid ||
-              !canvasRef.current ||
-              !dragStart
-            ) {
+            if (panning) {
+              return;
+            }
+
+            if (activeTool === 'eyedropper' || !grid || !canvasRef.current || !dragStart) {
               return;
             }
 
@@ -544,24 +567,24 @@ export function CanvasEditor() {
             }
           }}
           onPointerUp={(event) => {
+            if (panning) {
+              if (canvasRef.current && canvasRef.current.hasPointerCapture(event.pointerId)) {
+                canvasRef.current.releasePointerCapture(event.pointerId);
+              }
+
+              setPanning(null);
+              return;
+            }
+
             if (dragStart && dragEnd) {
-              if (
-                dragStart.row === dragEnd.row &&
-                dragStart.column === dragEnd.column
-              ) {
-                selectCell(
-                  selectionFromCell(dragStart.row, dragStart.column),
-                  event.shiftKey
-                );
+              if (dragStart.row === dragEnd.row && dragStart.column === dragEnd.column) {
+                selectCell(selectionFromCell(dragStart.row, dragStart.column), event.shiftKey);
               } else {
                 commitDrag(event.shiftKey);
               }
             }
 
-            if (
-              canvasRef.current &&
-              canvasRef.current.hasPointerCapture(event.pointerId)
-            ) {
+            if (canvasRef.current && canvasRef.current.hasPointerCapture(event.pointerId)) {
               canvasRef.current.releasePointerCapture(event.pointerId);
             }
 
@@ -572,4 +595,4 @@ export function CanvasEditor() {
       </div>
     </section>
   );
-} 
+}

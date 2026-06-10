@@ -1,4 +1,5 @@
 import type { GridDefinition, GridLine } from '../types/grid.types';
+import { normalizeGridToImage } from '../utils/gridUtils';
 
 interface AxisResult {
   lines: GridLine[];
@@ -179,7 +180,12 @@ function inferStep(lines: GridLine[], span: number): number {
   return Math.max(1, base >= 4 ? base : Math.round(median(likelyGaps)));
 }
 
-function buildRegularLines(start: number, end: number, step: number, rawLines: GridLine[]): GridLine[] {
+function buildRegularLines(
+  start: number,
+  end: number,
+  step: number,
+  rawLines: GridLine[]
+): GridLine[] {
   const span = Math.max(1, end - start);
   const cells = Math.max(1, Math.round(span / step));
   const snappedEnd = start + cells * step;
@@ -201,16 +207,20 @@ function analyzeAxis(
   fullLength: number,
   crossLength: number
 ): AxisResult {
-  const foregroundBounds =
-    largestProjectedRun(foregroundScores, Math.max(2, Math.ceil(crossLength * 0.02)), 6) ?? {
-      start: 0,
-      end: fullLength - 1
-    };
+  const foregroundBounds = largestProjectedRun(
+    foregroundScores,
+    Math.max(2, Math.ceil(crossLength * 0.02)),
+    6
+  ) ?? {
+    start: 0,
+    end: fullLength - 1
+  };
 
   const lineThreshold = thresholdFromScores(lineScores, Math.max(4, crossLength * 0.08));
   const allLines = dominantRuns(lineScores, lineThreshold, 3);
   const inBounds = allLines.filter(
-    (line) => line.position >= foregroundBounds.start - 3 && line.position <= foregroundBounds.end + 3
+    (line) =>
+      line.position >= foregroundBounds.start - 3 && line.position <= foregroundBounds.end + 3
   );
 
   const activeLines = inBounds.length >= 2 ? inBounds : allLines;
@@ -224,7 +234,8 @@ function analyzeAxis(
   const end = Math.min(fullLength, start + cells * step);
   const lines = buildRegularLines(start, end, step, activeLines);
   const matched = activeLines.filter(
-    (line) => Math.abs((line.position - start) / step - Math.round((line.position - start) / step)) <= 0.18
+    (line) =>
+      Math.abs((line.position - start) / step - Math.round((line.position - start) / step)) <= 0.18
   ).length;
 
   return {
@@ -233,11 +244,16 @@ function analyzeAxis(
     cellSize: step,
     start,
     end,
-    confidence: activeLines.length ? Math.min(1, matched / Math.max(cells + 1, activeLines.length)) : 0.35
+    confidence: activeLines.length
+      ? Math.min(1, matched / Math.max(cells + 1, activeLines.length))
+      : 0.35
   };
 }
 
-export function detectGrid(imageData: ImageData, manual?: { rows?: number; columns?: number }): GridDefinition {
+export function detectGrid(
+  imageData: ImageData,
+  manual?: { rows?: number; columns?: number }
+): GridDefinition {
   const { data, width, height } = imageData;
   const verticalScores = new Array<number>(width).fill(0);
   const horizontalScores = new Array<number>(height).fill(0);
@@ -280,14 +296,18 @@ export function detectGrid(imageData: ImageData, manual?: { rows?: number; colum
   const gridHeight = manual?.rows ? yAxis.cellSize * rows : yAxis.end - yAxis.start;
   const confidence = (xAxis.confidence + yAxis.confidence) / 2;
 
-  return {
-    rows,
-    columns,
-    cellWidth: Math.max(1, Math.round(gridWidth / columns)),
-    cellHeight: Math.max(1, Math.round(gridHeight / rows)),
-    bounds: { x, y, width: gridWidth, height: gridHeight },
-    verticalLines: xAxis.lines,
-    horizontalLines: yAxis.lines,
-    confidence
-  };
+  return normalizeGridToImage(
+    {
+      rows,
+      columns,
+      cellWidth: Math.max(1, Math.round(gridWidth / columns)),
+      cellHeight: Math.max(1, Math.round(gridHeight / rows)),
+      bounds: { x, y, width: gridWidth, height: gridHeight },
+      verticalLines: xAxis.lines,
+      horizontalLines: yAxis.lines,
+      confidence
+    },
+    width,
+    height
+  );
 }

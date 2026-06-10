@@ -6,10 +6,20 @@ import type {
 } from '../types/color.types';
 import type { GridDefinition } from '../types/grid.types';
 import { classifyColor, rgbToHsv, rgbaToHex } from '../utils/colorUtils';
-import { cellRect } from '../utils/gridUtils';
+import { getSafeCellRect } from '../utils/gridUtils';
 
-export function dominantCellColor(imageData: ImageData, grid: GridDefinition, row: number, column: number) {
-  const rect = cellRect(grid, row, column);
+export function dominantCellColor(
+  imageData: ImageData,
+  grid: GridDefinition,
+  row: number,
+  column: number
+) {
+  const rect = getSafeCellRect(grid, row, column, imageData.width, imageData.height);
+
+  if (!rect) {
+    return [0, 0, 0, 0] as [number, number, number, number];
+  }
+
   const startX = Math.max(0, Math.floor(rect.x + 1));
   const startY = Math.max(0, Math.floor(rect.y + 1));
   const endX = Math.min(imageData.width, Math.ceil(rect.x + rect.width - 1));
@@ -41,7 +51,8 @@ export function dominantCellColor(imageData: ImageData, grid: GridDefinition, ro
   }
 
   return (
-    [...buckets.values()].sort((a, b) => b.count - a.count)[0]?.rgba ?? ([0, 0, 0, 0] as const)
+    [...buckets.values()].sort((a, b) => b.count - a.count)[0]?.rgba ??
+    ([0, 0, 0, 0] as [number, number, number, number])
   );
 }
 
@@ -53,7 +64,12 @@ export function cellColorCoverage(
   group: ColorGroup,
   thresholds: ColorThresholds
 ) {
-  const rect = cellRect(grid, row, column);
+  const rect = getSafeCellRect(grid, row, column, imageData.width, imageData.height);
+
+  if (!rect) {
+    return 0;
+  }
+
   const insetX = Math.max(2, Math.floor(rect.width * 0.08));
   const insetY = Math.max(2, Math.floor(rect.height * 0.08));
   const startX = Math.max(0, Math.floor(rect.x + insetX));
@@ -99,7 +115,12 @@ export function cellGroupCoverages(
   column: number,
   thresholds: ColorThresholds
 ) {
-  const rect = cellRect(grid, row, column);
+  const rect = getSafeCellRect(grid, row, column, imageData.width, imageData.height);
+
+  if (!rect) {
+    return { blue: 0, red: 0, green: 0 };
+  }
+
   const insetX = Math.max(2, Math.floor(rect.width * 0.08));
   const insetY = Math.max(2, Math.floor(rect.height * 0.08));
   const startX = Math.max(0, Math.floor(rect.x + insetX));
@@ -186,8 +207,14 @@ export function applyColorIsolation(
   cells: CellColorAnalysis[],
   group: ColorGroup
 ): ImageData {
-  const output = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
-  const keep = new Set(cells.filter((cell) => cell.group === group).map((cell) => `${cell.row}:${cell.column}`));
+  const output = new ImageData(
+    new Uint8ClampedArray(imageData.data),
+    imageData.width,
+    imageData.height
+  );
+  const keep = new Set(
+    cells.filter((cell) => cell.group === group).map((cell) => `${cell.row}:${cell.column}`)
+  );
 
   for (const cell of cells) {
     if (keep.has(`${cell.row}:${cell.column}`)) {
@@ -206,15 +233,29 @@ export function removeColorGroup(
   cells: CellColorAnalysis[],
   group: ColorGroup
 ): ImageData {
-  const output = new ImageData(new Uint8ClampedArray(imageData.data), imageData.width, imageData.height);
+  const output = new ImageData(
+    new Uint8ClampedArray(imageData.data),
+    imageData.width,
+    imageData.height
+  );
   cells
     .filter((cell) => cell.group === group)
     .forEach((cell) => clearCellInterior(output, grid, cell.row, cell.column));
   return output;
 }
 
-export function clearCellInterior(imageData: ImageData, grid: GridDefinition, row: number, column: number): void {
-  const rect = cellRect(grid, row, column);
+export function clearCellInterior(
+  imageData: ImageData,
+  grid: GridDefinition,
+  row: number,
+  column: number
+): void {
+  const rect = getSafeCellRect(grid, row, column, imageData.width, imageData.height);
+
+  if (!rect) {
+    return;
+  }
+
   const startX = Math.max(0, Math.floor(rect.x + 1));
   const startY = Math.max(0, Math.floor(rect.y + 1));
   const endX = Math.min(imageData.width, Math.ceil(rect.x + rect.width - 1));
