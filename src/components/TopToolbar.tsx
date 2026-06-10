@@ -7,6 +7,7 @@ import {
   Maximize2,
   Moon,
   Redo2,
+  RotateCcw,
   ScanLine,
   Sun,
   Undo2,
@@ -32,6 +33,7 @@ export function TopToolbar() {
   const redo = useEditorStore((state) => state.redo);
   const past = useEditorStore((state) => state.past);
   const future = useEditorStore((state) => state.future);
+  const resetEdits = useEditorStore((state) => state.resetEdits);
   const theme = useEditorStore((state) => state.theme);
   const toggleTheme = useEditorStore((state) => state.toggleTheme);
   const language = useEditorStore((state) => state.language);
@@ -96,6 +98,10 @@ export function TopToolbar() {
         <button className="editor-button" disabled={future.length === 0} onClick={redo} title="Ctrl+Y">
           <Redo2 className="h-4 w-4" />
           {t('app.redo')}
+        </button>
+        <button className="editor-button" disabled={!image} onClick={resetEdits} title={t('controls.reset')}>
+          <RotateCcw className="h-4 w-4" />
+          {t('controls.reset')}
         </button>
         <button className="editor-button" disabled={!image} onClick={() => detect()}>
           <ScanLine className="h-4 w-4" />

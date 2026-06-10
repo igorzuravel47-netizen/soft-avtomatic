@@ -18,7 +18,7 @@ export function ImageUploader() {
 
   return (
     <section
-      className={`editor-panel flex min-h-56 flex-col items-center justify-center gap-4 border-dashed p-6 text-center transition ${
+      className={`editor-panel flex min-h-40 flex-col items-center justify-center gap-3 border-dashed p-4 text-center transition ${
         dragging ? 'border-cyan-400 bg-cyan-400/10' : ''
       }`}
       onDragOver={(event) => {
@@ -32,18 +32,18 @@ export function ImageUploader() {
         handleFiles(event.dataTransfer.files);
       }}
     >
-      <div className="flex h-12 w-12 items-center justify-center border" style={{ borderColor: 'var(--border)', background: 'var(--panel-2)' }}>
+      <div className="flex h-10 w-10 items-center justify-center border" style={{ borderColor: 'var(--border)', background: 'var(--panel-2)' }}>
         <Upload className="h-5 w-5" />
       </div>
       <div>
-        <h2 className="text-lg font-semibold">{t('upload.title')}</h2>
-        <p className="mt-1 text-sm" style={{ color: 'var(--muted)' }}>
+        <h2 className="font-display text-sm font-bold">{t('upload.title')}</h2>
+        <p className="mt-1 text-xs leading-5" style={{ color: 'var(--muted)' }}>
           {t('upload.hint')}
         </p>
       </div>
       <button
         type="button"
-        className="editor-button editor-button-primary"
+        className="editor-button editor-button-primary w-full"
         onClick={() => inputRef.current?.click()}
         disabled={loading}
       >

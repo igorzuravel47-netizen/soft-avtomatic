@@ -79,8 +79,6 @@ export function SelectionTool() {
   const updateLayerData = useEditorStore((state) => state.updateLayerData);
   const clearSelection = useEditorStore((state) => state.clearSelection);
   const selectCells = useEditorStore((state) => state.selectCells);
-  const showGridOverlay = useEditorStore((state) => state.showGridOverlay);
-  const toggleGridOverlay = useEditorStore((state) => state.toggleGridOverlay);
   const latest = selectedCells.at(-1);
   const buttonClass = (tool: typeof activeTool) =>
     `editor-button ${activeTool === tool ? 'editor-button-primary' : ''}`;
@@ -211,14 +209,6 @@ export function SelectionTool() {
           {t('selection.whiteCells')}
         </button>
       </div>
-      <button
-        type="button"
-        className="editor-button mb-3 w-full"
-        disabled={!grid}
-        onClick={toggleGridOverlay}
-      >
-        {showGridOverlay ? t('selection.hideGrid') : t('selection.showGrid')}
-      </button>
       {latest ? (
         <div className="space-y-2 text-sm">
           <div className="grid grid-cols-2 gap-2">

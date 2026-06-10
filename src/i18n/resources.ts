@@ -23,13 +23,21 @@ export const resources = {
         layers: 'Шари',
         selection: 'Виділення',
         properties: 'Властивості',
-        recent: 'Останні файли'
+        recent: 'Останні файли',
+        leftSidebar: 'Підготовка',
+        leftSidebarHint: 'Файл, сітка та превʼю',
+        collapseSidebar: 'Згорнути ліву панель',
+        expandSidebar: 'Розгорнути ліву панель'
       },
       upload: {
         title: 'Завантажити PNG',
         hint: 'Перетягніть PNG сюди або виберіть файл',
         choose: 'Вибрати PNG',
         loading: 'Завантаження...'
+      },
+      preview: {
+        pixels: 'Пікселі',
+        trim: 'Обрізано'
       },
       grid: {
         auto: 'Автоматична сітка',
@@ -123,13 +131,21 @@ export const resources = {
         layers: 'Layers',
         selection: 'Selection',
         properties: 'Properties',
-        recent: 'Recent Files'
+        recent: 'Recent Files',
+        leftSidebar: 'Preparation',
+        leftSidebarHint: 'File, grid and preview',
+        collapseSidebar: 'Collapse left sidebar',
+        expandSidebar: 'Expand left sidebar'
       },
       upload: {
         title: 'Upload PNG',
         hint: 'Drop a PNG here or choose a file',
         choose: 'Choose PNG',
         loading: 'Loading...'
+      },
+      preview: {
+        pixels: 'Pixels',
+        trim: 'Trim'
       },
       grid: {
         auto: 'Automatic Grid',

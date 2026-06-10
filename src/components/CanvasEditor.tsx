@@ -448,7 +448,7 @@ export function CanvasEditor() {
         className="checkerboard h-[calc(100vh-9rem)] overflow-auto border"
         style={{ borderColor: 'var(--border)' }}
         onWheel={(event) => {
-          if (!event.ctrlKey || !containerRef.current) {
+          if (!containerRef.current) {
             return;
           }
 
@@ -484,15 +484,23 @@ export function CanvasEditor() {
             width: renderedData.width * zoom,
             height: renderedData.height * zoom,
             cursor:
-              spacePressed || panning
-                ? 'grab'
+              panning
+                ? 'grabbing'
+                : spacePressed
+                  ? 'grab'
                 : activeTool === 'eyedropper'
                   ? 'crosshair'
                   : 'default'
           }}
+          onAuxClick={(event) => {
+            if (event.button === 1) {
+              event.preventDefault();
+            }
+          }}
           onPointerDown={(event) => {
             if ((event.button === 1 || spacePressed) && containerRef.current) {
               event.preventDefault();
+              canvasRef.current?.setPointerCapture(event.pointerId);
 
               setPanning({
                 x: event.clientX,
@@ -539,6 +547,10 @@ export function CanvasEditor() {
               });
             }
 
+            if (panning) {
+              return;
+            }
+
             if (activeTool === 'eyedropper' || !grid || !canvasRef.current || !dragStart) {
               return;
             }
@@ -551,6 +563,15 @@ export function CanvasEditor() {
             }
           }}
           onPointerUp={(event) => {
+            if (panning) {
+              if (canvasRef.current && canvasRef.current.hasPointerCapture(event.pointerId)) {
+                canvasRef.current.releasePointerCapture(event.pointerId);
+              }
+
+              setPanning(null);
+              return;
+            }
+
             if (dragStart && dragEnd) {
               if (dragStart.row === dragEnd.row && dragStart.column === dragEnd.column) {
                 selectCell(selectionFromCell(dragStart.row, dragStart.column), event.shiftKey);
