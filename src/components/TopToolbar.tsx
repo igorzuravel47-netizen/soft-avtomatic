@@ -8,7 +8,6 @@ import {
   Moon,
   Redo2,
   RotateCcw,
-  ScanLine,
   Sun,
   Undo2,
   ZoomIn,
@@ -16,7 +15,6 @@ import {
 } from 'lucide-react';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGridDetection } from '../hooks/useGridDetection';
 import { useImageProcessing } from '../hooks/useImageProcessing';
 import { exportPng } from '../services/exportService';
 import { useEditorStore } from '../store/editorStore';
@@ -26,7 +24,6 @@ export function TopToolbar() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { t } = useTranslation();
   const { loadFile } = useImageProcessing();
-  const { detect } = useGridDetection();
   const image = useEditorStore((state) => state.image);
   const layers = useEditorStore((state) => state.layers);
   const undo = useEditorStore((state) => state.undo);
@@ -61,7 +58,7 @@ export function TopToolbar() {
       <div className="flex items-center gap-2">
         <div className="mr-2">
           <h1 className="font-display text-sm font-extrabold leading-4">{t('app.title')}</h1>
-          <p className="text-[11px]" style={{ color: 'var(--muted)' }}>{t('app.subtitle')}</p>
+    
         </div>
         <button className="editor-button" onClick={() => inputRef.current?.click()} title="Ctrl+O">
           <FileUp className="h-4 w-4" />
@@ -102,10 +99,6 @@ export function TopToolbar() {
         <button className="editor-button" disabled={!image} onClick={resetEdits} title={t('controls.reset')}>
           <RotateCcw className="h-4 w-4" />
           {t('controls.reset')}
-        </button>
-        <button className="editor-button" disabled={!image} onClick={() => detect()}>
-          <ScanLine className="h-4 w-4" />
-          {t('app.detectGrid')}
         </button>
         <button className="editor-button" onClick={zoomOut} title={t('controls.zoomOut')}>
           <ZoomOut className="h-4 w-4" />

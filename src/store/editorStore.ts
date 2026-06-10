@@ -29,6 +29,7 @@ export interface ActionHistoryEntry {
   type: ActionHistoryType;
   cells: CellSelection[];
   count: number;
+  detail?: string;
   createdAt: number;
 }
 
@@ -78,7 +79,7 @@ interface EditorState {
   toggleFullscreen: () => void;
   addToast: (message: string) => void;
   removeToast: (id: string) => void;
-  addActionHistory: (type: ActionHistoryType, cells?: CellSelection[], count?: number) => void;
+  addActionHistory: (type: ActionHistoryType, cells?: CellSelection[], count?: number, detail?: string) => void;
   addRecentFile: (name: string) => void;
   toggleLayer: (id: string) => void;
   setLayerOpacity: (id: string, opacity: number) => void;
@@ -117,13 +118,15 @@ function withHistory(state: EditorState) {
 function actionEntry(
   type: ActionHistoryType,
   cells: CellSelection[] = [],
-  count = cells.length
+  count = cells.length,
+  detail?: string
 ): ActionHistoryEntry {
   return {
     id: crypto.randomUUID(),
     type,
     cells: cells.slice(0, 30),
     count,
+    detail,
     createdAt: Date.now()
   };
 }
@@ -240,9 +243,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
     set((state) => ({
       toasts: state.toasts.filter((toast) => toast.id !== id)
     })),
-  addActionHistory: (type, cells = [], count = cells.length) =>
+  addActionHistory: (type, cells = [], count = cells.length, detail) =>
     set((state) => ({
-      actionHistory: [actionEntry(type, cells, count), ...state.actionHistory].slice(0, 30)
+      actionHistory: [actionEntry(type, cells, count, detail), ...state.actionHistory].slice(0, 30)
     })),
   addRecentFile: (name) =>
     set((state) => {

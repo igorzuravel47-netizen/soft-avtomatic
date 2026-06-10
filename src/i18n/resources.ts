@@ -2,14 +2,13 @@ export const resources = {
   uk: {
     translation: {
       app: {
-        title: 'PNG Grid Studio',
-        subtitle: 'Професійний редактор PNG-сіток',
+        title: 'PNG GTO Studio',
+
         open: 'Відкрити',
         save: 'Зберегти PNG',
         undo: 'Назад',
         redo: 'Вперед',
         crop: 'Обрізати',
-        detectGrid: 'Знайти сітку',
         theme: 'Тема',
         language: 'Мова',
         help: 'Гарячі клавіші',
@@ -53,11 +52,13 @@ export const resources = {
       selection: {
         select: 'Select',
         pipette: 'Піпетка',
-        wholeGrid: 'Вся сітка',
-        whiteCells: 'Білі клітинки',
+        scopeCell: 'Клітинка',
+        scopeFragment: 'Фрагмент',
         showGrid: 'Показати службову сітку',
         hideGrid: 'Сховати службову сітку',
         clear: 'Зняти виділення',
+        fill: 'Залити',
+        fillColor: 'Колір заливки',
         fillWhite: 'Залити #FFFFFF',
         empty: 'Виділяйте клітинки вручну або піпеткою по кольору.',
         row: 'Рядок',
@@ -78,11 +79,12 @@ export const resources = {
         title: 'Історія дій',
         empty: 'Після роботи з клітинками тут буде детальний журнал.',
         count: '{{count}} клітинок',
+        detail: 'Деталь:',
         actions: {
           'select-cell': 'Вибрано клітинку',
           'select-cells': 'Вибрано клітинки',
           'clear-selection': 'Знято виділення',
-          'fill-white': 'Залито білим',
+          'fill-white': 'Залито кольором',
           'reset-edits': 'Очищено зміни',
           undo: 'Скасовано дію',
           redo: 'Повторено дію'
@@ -104,7 +106,7 @@ export const resources = {
         undo: 'Назад',
         redo: 'Вперед',
         selectAll: 'Вибрати всі клітинки',
-        delete: 'Залити вибране білим',
+        delete: 'Залити вибране кольором',
         escape: 'Зняти виділення',
         pan: 'Тимчасовий pan mode',
         zoom: 'Zoom до курсора',
@@ -116,21 +118,19 @@ export const resources = {
         opened: 'Файл відкрито',
         autosaved: 'Автозбережено',
         selectedAll: 'Вибрано всю сітку',
-        filled: 'Виділення залито білим'
+        filled: 'Виділення залито кольором'
       }
     }
   },
   en: {
     translation: {
       app: {
-        title: 'PNG Grid Studio',
-        subtitle: 'Professional PNG grid editor',
+     title: 'PNG GTO Studio',
         open: 'Open',
         save: 'Save PNG',
         undo: 'Undo',
         redo: 'Redo',
         crop: 'Crop',
-        detectGrid: 'Detect Grid',
         theme: 'Theme',
         language: 'Language',
         help: 'Hotkeys',
@@ -174,11 +174,13 @@ export const resources = {
       selection: {
         select: 'Select',
         pipette: 'Pipette',
-        wholeGrid: 'Whole grid',
-        whiteCells: 'White cells',
+        scopeCell: 'Cell',
+        scopeFragment: 'Fragment',
         showGrid: 'Show helper grid',
         hideGrid: 'Hide helper grid',
         clear: 'Clear selection',
+        fill: 'Fill',
+        fillColor: 'Fill color',
         fillWhite: 'Fill #FFFFFF',
         empty: 'Select cells manually or use pipette by color.',
         row: 'Row',
@@ -199,11 +201,12 @@ export const resources = {
         title: 'Action History',
         empty: 'Detailed cell actions will appear here.',
         count: '{{count}} cells',
+        detail: 'Detail:',
         actions: {
           'select-cell': 'Selected cell',
           'select-cells': 'Selected cells',
           'clear-selection': 'Cleared selection',
-          'fill-white': 'Filled white',
+          'fill-white': 'Filled color',
           'reset-edits': 'Reset edits',
           undo: 'Undid action',
           redo: 'Redid action'
@@ -225,7 +228,7 @@ export const resources = {
         undo: 'Undo',
         redo: 'Redo',
         selectAll: 'Select all cells',
-        delete: 'Fill selected white',
+        delete: 'Fill selected color',
         escape: 'Clear selection',
         pan: 'Temporary pan mode',
         zoom: 'Zoom to cursor',
@@ -237,7 +240,7 @@ export const resources = {
         opened: 'File opened',
         autosaved: 'Autosaved',
         selectedAll: 'Whole grid selected',
-        filled: 'Selection filled white'
+        filled: 'Selection filled with color'
       }
     }
   }

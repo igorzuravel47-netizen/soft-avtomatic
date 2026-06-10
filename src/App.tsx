@@ -1,11 +1,10 @@
-import { Clock3, PanelLeftClose, PanelLeftOpen, ScanLine, Upload } from 'lucide-react';
+import { ChevronDown, ChevronRight, Clock3, PanelLeftClose, PanelLeftOpen, ScanLine } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { BottomStatusBar } from './components/BottomStatusBar';
 import { CanvasEditor } from './components/CanvasEditor';
 import { ComparePreview } from './components/ComparePreview';
 import { HelpModal } from './components/HelpModal';
-import { ImageUploader } from './components/ImageUploader';
 import { SelectionTool } from './components/SelectionTool';
 import { ToastViewport } from './components/ToastViewport';
 import { TopToolbar } from './components/TopToolbar';
@@ -20,17 +19,26 @@ function formatCell(row: number, column: number) {
 
 function ActionHistoryPanel() {
   const { t } = useTranslation();
+  const [collapsed, setCollapsed] = useState(false);
   const actionHistory = useEditorStore((state) => state.actionHistory);
 
   return (
     <section className="editor-panel p-3">
-      <div className="mb-3 flex items-center gap-2">
-        <Clock3 className="h-4 w-4" />
-        <h2 className="font-display text-sm font-bold">{t('history.title')}</h2>
-      </div>
+      <button
+        type="button"
+        className="flex w-full items-center justify-between gap-2 text-left"
+        onClick={() => setCollapsed((value) => !value)}
+        aria-expanded={!collapsed}
+      >
+        <span className="flex min-w-0 items-center gap-2">
+          <Clock3 className="h-4 w-4 shrink-0" />
+          <span className="truncate font-display text-sm font-bold">{t('history.title')}</span>
+        </span>
+        {collapsed ? <ChevronRight className="h-4 w-4 shrink-0" /> : <ChevronDown className="h-4 w-4 shrink-0" />}
+      </button>
 
-      {actionHistory.length ? (
-        <div className="grid gap-2">
+      {!collapsed && actionHistory.length ? (
+        <div className="mt-3 grid gap-2">
           {actionHistory.map((entry) => {
             const visibleCells = entry.cells.slice(0, 12);
             const hiddenCount = Math.max(0, entry.count - visibleCells.length);
@@ -46,6 +54,13 @@ function ActionHistoryPanel() {
                 <p className="mt-1 text-[11px]" style={{ color: 'var(--muted)' }}>
                   {t('history.count', { count: entry.count })}
                 </p>
+                {entry.detail ? (
+                  <div className="mt-2 flex items-center gap-2 text-[11px]" style={{ color: 'var(--muted)' }}>
+                    <span>{t('history.detail')}</span>
+                    <span className="h-4 w-4 border" style={{ borderColor: 'var(--border)', background: entry.detail }} />
+                    <span className="font-mono">{entry.detail}</span>
+                  </div>
+                ) : null}
                 {visibleCells.length ? (
                   <div className="mt-2 flex flex-wrap gap-1">
                     {visibleCells.map((cell) => (
@@ -60,11 +75,13 @@ function ActionHistoryPanel() {
             );
           })}
         </div>
-      ) : (
-        <p className="text-xs leading-5" style={{ color: 'var(--muted)' }}>
+      ) : null}
+
+      {!collapsed && !actionHistory.length ? (
+        <p className="mt-3 text-xs leading-5" style={{ color: 'var(--muted)' }}>
           {t('history.empty')}
         </p>
-      )}
+      ) : null}
     </section>
   );
 }
@@ -166,21 +183,12 @@ export function App() {
 
           {leftSidebarCollapsed ? (
             <div className="mt-3 grid justify-items-center gap-2">
-              <div className="sidebar-rail-item" title={t('layout.upload')}>
-                <Upload className="h-4 w-4" />
-              </div>
               <div className="sidebar-rail-item" title={t('layout.analysis')}>
                 <ScanLine className="h-4 w-4" />
               </div>
             </div>
           ) : (
             <div className="sidebar-scroll grid min-h-0 content-start gap-2 overflow-y-auto overflow-x-hidden p-2">
-              {!image ? (
-                <>
-                  <div className="section-kicker">{t('layout.upload')}</div>
-                  <ImageUploader />
-                </>
-              ) : null}
               <PropertiesPanel />
               <ActionHistoryPanel />
             </div>
