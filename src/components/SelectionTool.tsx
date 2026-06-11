@@ -114,7 +114,7 @@ export function SelectionTool() {
           onClick={() => setActiveTool('select')}
         >
           <MousePointer2 className="h-4 w-4" />
-          {t('selection.select')}
+          <span className="button-label">{t('selection.select')}</span>
         </button>
         <button
           type="button"
@@ -123,7 +123,7 @@ export function SelectionTool() {
           onClick={() => setActiveTool('eyedropper')}
         >
           <Pipette className="h-4 w-4" />
-          {t('selection.pipette')}
+          <span className="button-label">{t('selection.pipette')}</span>
         </button>
       </div>
       {latest ? (
@@ -167,21 +167,21 @@ export function SelectionTool() {
           </label>
           <button
             type="button"
-            className="editor-button w-full"
-            disabled={selectedCells.length === 0}
-            onClick={clearSelection}
-          >
-            {t('selection.clear')}
-          </button>
+          className="editor-button w-full"
+          disabled={selectedCells.length === 0}
+          onClick={clearSelection}
+        >
+          <span className="button-label">{t('selection.clear')}</span>
+        </button>
           <button
             type="button"
             className="editor-button editor-button-primary w-full"
             disabled={!grid || selectedCells.length === 0}
-            onClick={fillSelectedCells}
-          >
-            <PaintBucket className="h-4 w-4" />
-            {t('selection.fill')}
-          </button>
+          onClick={fillSelectedCells}
+        >
+          <PaintBucket className="h-4 w-4" />
+          <span className="button-label">{t('selection.fill')}</span>
+        </button>
         </div>
       ) : (
         <p className="text-sm" style={{ color: 'var(--muted)' }}>

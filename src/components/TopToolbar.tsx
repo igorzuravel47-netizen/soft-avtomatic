@@ -61,27 +61,27 @@ export function TopToolbar({ onStartTour }: TopToolbarProps) {
 
   return (
     <header className="flex h-12 shrink-0 items-center justify-between border-b px-3" style={{ borderColor: 'var(--border)', background: 'var(--panel)' }}>
-      <div className="flex items-center gap-2">
-        <div className="mr-2">
-          <h1 className="font-display text-sm font-extrabold leading-4">{t('app.title')}</h1>
-          <p className="text-[11px]" style={{ color: 'var(--muted)' }}>{t('app.subtitle')}</p>
+      <div className="flex min-w-0 items-center gap-2">
+        <div className="mr-2 w-[260px] min-w-0">
+          <h1 className="truncate font-display text-sm font-extrabold leading-4" title={t('app.title')}>{t('app.title')}</h1>
+          <p className="truncate text-[11px]" style={{ color: 'var(--muted)' }} title={t('app.subtitle')}>{t('app.subtitle')}</p>
         </div>
         <Tooltip text={t('tooltips.openFile')}>
-          <button className="editor-button" onClick={() => inputRef.current?.click()} title="Ctrl+O" data-tour="open-file">
+          <button className="editor-button toolbar-button" onClick={() => inputRef.current?.click()} title="Ctrl+O" data-tour="open-file">
             <FileUp className="h-4 w-4" />
-            {t('app.open')}
+            <span className="button-label">{t('app.open')}</span>
           </button>
         </Tooltip>
         <Tooltip text={t('tooltips.exportPng')}>
           <button
-            className="editor-button editor-button-primary"
+            className="editor-button editor-button-primary toolbar-button"
             disabled={!image}
             onClick={() => image && void exportPng(layers, image.name).then(() => addToast(t('toast.exported')))}
             title="Ctrl+S"
             data-tour="export-png"
           >
             <Download className="h-4 w-4" />
-            {t('app.save')}
+            <span className="button-label">{t('app.save')}</span>
           </button>
         </Tooltip>
         <input
@@ -99,46 +99,46 @@ export function TopToolbar({ onStartTour }: TopToolbarProps) {
       </div>
 
       <div className="flex items-center gap-1">
-        <button className="editor-button" disabled={past.length === 0} onClick={undo} title="Ctrl+Z">
+        <button className="editor-button toolbar-button" disabled={past.length === 0} onClick={undo} title="Ctrl+Z">
           <Undo2 className="h-4 w-4" />
-          {t('app.undo')}
+          <span className="button-label">{t('app.undo')}</span>
         </button>
-        <button className="editor-button" disabled={future.length === 0} onClick={redo} title="Ctrl+Y">
+        <button className="editor-button toolbar-button" disabled={future.length === 0} onClick={redo} title="Ctrl+Y">
           <Redo2 className="h-4 w-4" />
-          {t('app.redo')}
+          <span className="button-label">{t('app.redo')}</span>
         </button>
-        <button className="editor-button" disabled={!image} onClick={resetEdits} title={t('controls.reset')}>
+        <button className="editor-button toolbar-button toolbar-button-wide" disabled={!image} onClick={resetEdits} title={t('controls.reset')}>
           <RotateCcw className="h-4 w-4" />
-          {t('controls.reset')}
+          <span className="button-label">{t('controls.reset')}</span>
         </button>
-        <button className="editor-button" onClick={zoomOut} title={t('controls.zoomOut')}>
+        <button className="editor-button toolbar-icon-button" onClick={zoomOut} title={t('controls.zoomOut')}>
           <ZoomOut className="h-4 w-4" />
         </button>
-        <button className="editor-button" onClick={zoomIn} title={t('controls.zoomIn')}>
+        <button className="editor-button toolbar-icon-button" onClick={zoomIn} title={t('controls.zoomIn')}>
           <ZoomIn className="h-4 w-4" />
         </button>
-        <button className="editor-button" onClick={() => window.dispatchEvent(new Event('png-grid-fit-screen'))}>
+        <button className="editor-button toolbar-button" onClick={() => window.dispatchEvent(new Event('png-grid-fit-screen'))}>
           <Expand className="h-4 w-4" />
-          {t('controls.fit')}
+          <span className="button-label">{t('controls.fit')}</span>
         </button>
-        <button className="editor-button" onClick={() => window.dispatchEvent(new Event('png-grid-actual-size'))}>
-          {t('controls.actual')}
+        <button className="editor-button toolbar-short-button" onClick={() => window.dispatchEvent(new Event('png-grid-actual-size'))}>
+          <span className="button-label">{t('controls.actual')}</span>
         </button>
-        <button className="editor-button" onClick={onStartTour}>
+        <button className="editor-button toolbar-button" onClick={onStartTour}>
           <ListChecks className="h-4 w-4" />
-          {t('tour.button')}
+          <span className="button-label">{t('tour.button')}</span>
         </button>
-        <button className="editor-button" onClick={changeLanguage}>
+        <button className="editor-button toolbar-short-button" onClick={changeLanguage}>
           <Languages className="h-4 w-4" />
-          {language.toUpperCase()}
+          <span className="button-label">{language.toUpperCase()}</span>
         </button>
-        <button className="editor-button" onClick={toggleTheme}>
+        <button className="editor-button toolbar-icon-button" onClick={toggleTheme}>
           {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
         </button>
-        <button className="editor-button" onClick={() => setHelpOpen(true)} title="?">
+        <button className="editor-button toolbar-icon-button" onClick={() => setHelpOpen(true)} title="?">
           <HelpCircle className="h-4 w-4" />
         </button>
-        <button className="editor-button" onClick={toggleFullscreen} title="F11">
+        <button className="editor-button toolbar-icon-button" onClick={toggleFullscreen} title="F11">
           <Maximize2 className="h-4 w-4" />
         </button>
       </div>

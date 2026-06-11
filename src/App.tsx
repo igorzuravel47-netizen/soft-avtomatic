@@ -106,19 +106,6 @@ function PropertiesPanel() {
   );
 }
 
-function ProductIntroPanel() {
-  const { t } = useTranslation();
-
-  return (
-    <section className="editor-panel p-3">
-      <h2 className="font-display text-sm font-bold">{t('seo.heading')}</h2>
-      <p className="mt-2 text-xs leading-5" style={{ color: 'var(--muted)' }}>
-        {t('seo.description')}
-      </p>
-    </section>
-  );
-}
-
 export function App() {
   const { t } = useTranslation();
   const [leftSidebarCollapsed, setLeftSidebarCollapsed] = useState(false);
@@ -205,7 +192,6 @@ export function App() {
             </div>
           ) : (
             <div className="sidebar-scroll grid min-h-0 content-start gap-2 overflow-y-auto overflow-x-hidden p-2">
-              <ProductIntroPanel />
               <PropertiesPanel />
               <ActionHistoryPanel />
             </div>

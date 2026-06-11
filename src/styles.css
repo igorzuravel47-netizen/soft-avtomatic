@@ -99,6 +99,37 @@ kbd {
   font-weight: 600;
 }
 
+.editor-button svg {
+  flex: 0 0 auto;
+}
+
+.button-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toolbar-button {
+  width: 104px;
+}
+
+.toolbar-button-wide {
+  width: 132px;
+}
+
+.toolbar-icon-button {
+  width: 42px;
+  padding-right: 0;
+  padding-left: 0;
+}
+
+.toolbar-short-button {
+  width: 58px;
+  padding-right: 0.35rem;
+  padding-left: 0.35rem;
+}
+
 .editor-button:hover:not(:disabled) {
   border-color: var(--accent);
   color: var(--accent);
