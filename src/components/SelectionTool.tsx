@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEditorStore } from '../store/editorStore';
 import { clearImageData, cloneImageData } from '../utils/canvasUtils';
-import { cellId, getSafeCellRect } from '../utils/gridUtils';
+import { getSafeCellRect } from '../utils/gridUtils';
 
 type Grid = NonNullable<ReturnType<typeof useEditorStore.getState>['grid']>;
 const DEFAULT_FILL_COLOR = '#ffffff';

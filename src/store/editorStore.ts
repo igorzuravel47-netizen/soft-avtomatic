@@ -8,7 +8,7 @@ import { defaultThresholds } from '../utils/colorUtils';
 
 const HISTORY_LIMIT = 50;
 
-export type EditorTool = 'select' | 'eyedropper';
+export type EditorTool = 'select' | 'eyedropper' | 'grid-eyedropper';
 export type ThemeMode = 'system' | 'light' | 'dark';
 export type ActionHistoryType =
   | 'select-cell'
@@ -45,6 +45,8 @@ interface EditorState {
   thresholds: ColorThresholds;
   layers: EditorLayer[];
   selectedCells: CellSelection[];
+  gridLineColor: string | null;
+  gridLineTolerance: number;
   activeLayerId: string | null;
   activeTool: EditorTool;
   showGridOverlay: boolean;
@@ -66,6 +68,8 @@ interface EditorState {
   setColors: (colors: CellColorAnalysis[]) => void;
   setThreshold: (group: ColorGroup, key: keyof ColorThresholds[ColorGroup], value: number) => void;
   setActiveTool: (tool: EditorTool) => void;
+  setGridLineColor: (color: string | null) => void;
+  setGridLineTolerance: (value: number) => void;
   toggleGridOverlay: () => void;
   setViewMode: (mode: ViewMode) => void;
   setZoom: (zoom: number) => void;
@@ -138,6 +142,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   thresholds: defaultThresholds,
   layers: [],
   selectedCells: [],
+  gridLineColor: null,
+  gridLineTolerance: 70,
   activeLayerId: null,
   activeTool: 'select',
   showGridOverlay: false,
@@ -193,6 +199,8 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       colors: [],
       layers: [originalLayer, maskLayer, editingLayer],
       selectedCells: [],
+      gridLineColor: get().gridLineColor,
+      gridLineTolerance: get().gridLineTolerance,
       activeLayerId: 'editing',
       actionHistory: [],
       past: [],
@@ -213,6 +221,9 @@ export const useEditorStore = create<EditorState>((set, get) => ({
       }
     })),
   setActiveTool: (activeTool) => set({ activeTool }),
+  setGridLineColor: (gridLineColor) => set({ gridLineColor }),
+  setGridLineTolerance: (value) =>
+    set({ gridLineTolerance: Math.min(180, Math.max(0, Math.round(value))) }),
   toggleGridOverlay: () => set((state) => ({ showGridOverlay: !state.showGridOverlay })),
   setViewMode: (viewMode) => set({ viewMode }),
   setZoom: (zoom) => set({ zoom: Math.min(32, Math.max(0.05, zoom)) }),
