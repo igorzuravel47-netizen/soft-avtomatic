@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useEditorStore } from '../store/editorStore';
 import { clearImageData, cloneImageData } from '../utils/canvasUtils';
-import { getSafeCellRect } from '../utils/gridUtils';
+import { cellId, getSafeCellRect } from '../utils/gridUtils';
 
 type Grid = NonNullable<ReturnType<typeof useEditorStore.getState>['grid']>;
 const DEFAULT_FILL_COLOR = '#ffffff';
@@ -88,7 +88,6 @@ export function SelectionTool() {
     });
     updateLayerData('editing', next);
     addActionHistory('fill-white', cellsToFill, cellsToFill.length, fillColor);
-    useEditorStore.getState().addToast(t('toast.filled'));
     clearSelection();
   }
 
@@ -98,14 +97,11 @@ export function SelectionTool() {
   });
 
   return (
-    <section className="editor-panel p-4" data-tour="cell-selection">
+    <section className="editor-panel p-4">
       <div className="mb-3 flex items-center gap-2">
         <MousePointer2 className="h-4 w-4" />
-        <h2 className="font-semibold">{t('layout.selection')}</h2>
+        <h2 className="font-semibold">Selection</h2>
       </div>
-      <p className="mb-3 text-xs leading-5" style={{ color: 'var(--muted)' }}>
-        {t('tooltips.canvas')}
-      </p>
       <div className="mb-3 grid grid-cols-2 gap-2">
         <button
           type="button"
@@ -114,7 +110,7 @@ export function SelectionTool() {
           onClick={() => setActiveTool('select')}
         >
           <MousePointer2 className="h-4 w-4" />
-          <span className="button-label">{t('selection.select')}</span>
+          {t('selection.select')}
         </button>
         <button
           type="button"
@@ -123,9 +119,27 @@ export function SelectionTool() {
           onClick={() => setActiveTool('eyedropper')}
         >
           <Pipette className="h-4 w-4" />
-          <span className="button-label">{t('selection.pipette')}</span>
+          {t('selection.pipette')}
         </button>
       </div>
+      <label className="mb-3 grid gap-1 text-xs font-semibold">
+        {t('selection.fillColor')}
+        <div className="flex items-center gap-2">
+          <input
+            type="color"
+            className="h-9 w-12 border bg-transparent p-1"
+            style={{ borderColor: 'var(--border)' }}
+            value={isValidHexColor(fillColor) ? fillColor : DEFAULT_FILL_COLOR}
+            onChange={(event) => setFillColor(event.target.value)}
+          />
+          <input
+            type="text"
+            className="editor-input min-w-0 flex-1 px-2 py-2 font-mono text-xs"
+            value={fillColor}
+            onChange={(event) => setFillColor(event.target.value)}
+          />
+        </div>
+      </label>
       {latest ? (
         <div className="space-y-2 text-sm">
           <div className="grid grid-cols-2 gap-2">
@@ -147,41 +161,23 @@ export function SelectionTool() {
           <p className="text-xs" style={{ color: 'var(--muted)' }}>
             {t('selection.selected', { count: selectedCells.length })}
           </p>
-          <label className="grid gap-1 text-xs font-semibold">
-            {t('selection.fillColor')}
-            <div className="flex items-center gap-2">
-              <input
-                type="color"
-                className="h-9 w-12 border bg-transparent p-1"
-                style={{ borderColor: 'var(--border)' }}
-                value={isValidHexColor(fillColor) ? fillColor : DEFAULT_FILL_COLOR}
-                onChange={(event) => setFillColor(event.target.value)}
-              />
-              <input
-                type="text"
-                className="editor-input min-w-0 flex-1 px-2 py-2 font-mono text-xs"
-                value={fillColor}
-                onChange={(event) => setFillColor(event.target.value)}
-              />
-            </div>
-          </label>
           <button
             type="button"
-          className="editor-button w-full"
-          disabled={selectedCells.length === 0}
-          onClick={clearSelection}
-        >
-          <span className="button-label">{t('selection.clear')}</span>
-        </button>
+            className="editor-button w-full"
+            disabled={selectedCells.length === 0}
+            onClick={clearSelection}
+          >
+            {t('selection.clear')}
+          </button>
           <button
             type="button"
             className="editor-button editor-button-primary w-full"
-            disabled={!grid || selectedCells.length === 0}
-          onClick={fillSelectedCells}
-        >
-          <PaintBucket className="h-4 w-4" />
-          <span className="button-label">{t('selection.fill')}</span>
-        </button>
+            disabled={!grid || selectedCells.length === 0 || !isValidHexColor(fillColor)}
+            onClick={fillSelectedCells}
+          >
+            <PaintBucket className="h-4 w-4" />
+            {t('selection.fill')}
+          </button>
         </div>
       ) : (
         <p className="text-sm" style={{ color: 'var(--muted)' }}>
